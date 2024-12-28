@@ -1,0 +1,9 @@
+### Dev ###
+FROM node:alpine AS build
+WORKDIR /usr/src/app/api
+ENV NODE_ENV=development
+COPY api .
+RUN npm i
+RUN npm i -g pm2
+
+CMD ["npm","run", "start:dev"]
