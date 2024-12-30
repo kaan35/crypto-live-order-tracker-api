@@ -5,10 +5,10 @@ import * as pairsModel from './../pairs/pairs.model.js';
 import * as ordersModel from './orders.model.js';
 
 export const create = async (requestData) => {
-  const { amount, orderType, pairKey, price } = requestData;
+  const { actionType, amount, orderType, pairKey, price } = requestData;
   let requestDataCheck = false;
 
-  if (amount && orderType && pairKey && price) {
+  if (actionType && amount && orderType && pairKey && price) {
     requestDataCheck = true;
   }
 
@@ -17,6 +17,7 @@ export const create = async (requestData) => {
 
     if (pairDetail?.status === 'success') {
       const result = await ordersModel.insertOne({
+        actionType,
         amount,
         insertDateTime: getDateTime(),
         insertDateTimeStamp: getDateTimeStamp(),
@@ -28,7 +29,7 @@ export const create = async (requestData) => {
       });
 
       if (result?.status === 'success') {
-        sendSocketEvent(`pair-${pairDetail?.data?.key}-order`, result?.data);
+        sendSocketEvent(`pair-${pairDetail?.data?.key}-order-${orderType}`, result?.data);
         return {
           message: 'Order successfully created',
           status: 'success',
@@ -52,16 +53,16 @@ export const create = async (requestData) => {
   };
 };
 
-export const findAllGroupType = async (id) => {
+export const findAllByItemLimit = async (id) => {
   const pairDetail = await pairsModel.findOne({ key: id });
   const ordersBuy = await ordersModel.findAll(
-    { orderType: 'buy', pairId: pairDetail?.data?._id },
+    { actionType: 'buy', orderType: 'limit', pairId: pairDetail?.data?._id },
     { price: -1 },
     0,
     10,
   );
   const ordersSell = await ordersModel.findAll(
-    { orderType: 'sell', pairId: pairDetail?.data?._id },
+    { actionType: 'sell', orderType: 'limit', pairId: pairDetail?.data?._id },
     { price: -1 },
     0,
     10,
@@ -74,7 +75,21 @@ export const findAllGroupType = async (id) => {
         sell: ordersSell?.data,
       },
     },
-    message: 'Kayıt başarıyla güncellendi',
+    status: 'success',
+  };
+};
+
+export const findAllByItemMarket = async (id) => {
+  const pairDetail = await pairsModel.findOne({ key: id });
+  const orders = await ordersModel.findAll(
+    { orderType: 'market', pairId: pairDetail?.data?._id },
+    { price: -1 },
+    0,
+    10,
+  );
+
+  return {
+    data: orders?.data,
     status: 'success',
   };
 };

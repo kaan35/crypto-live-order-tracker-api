@@ -3,7 +3,8 @@ import * as ordersController from './orders.controller.js';
 
 const router = express.Router();
 
-router.get('/:id/group/type', ordersController.findAllGroupType);
+router.get('/:id/limit', ordersController.findAllLimit);
+router.get('/:id/market', ordersController.findAllMarket);
 router.post('/', ordersController.create);
 
 export default router;
