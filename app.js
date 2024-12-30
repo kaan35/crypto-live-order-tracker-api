@@ -3,6 +3,7 @@ import cors from 'cors';
 import express from 'express';
 import logger from 'morgan';
 import { createServer } from 'node:http';
+import { createClient } from 'redis';
 import { Server } from 'socket.io';
 import ordersRouter from './src/modules/orders/orders.routes.js';
 import pairsRouter from './src/modules/pairs/pairs.routes.js';
@@ -39,6 +40,16 @@ io.on('connection', (socket) => {
   socket.on('disconnect', () => {
     console.log('A client disconnected!');
   });
+});
+
+export const redisClient = await createClient({
+  url: config.redisUrl,
+})
+  .on('error', (err) => console.log('Redis Client Error', err))
+  .connect();
+
+redisClient.on('connect', () => {
+  console.log('Connected to Redis');
 });
 
 app.use('/orders', ordersRouter);

@@ -1,7 +1,10 @@
 import * as pairsModel from './pairs.model.js';
 
 export const findAllSortedByTitle = async () => {
-  const items = await pairsModel.findAll('', { title: 1 });
+  const items = await pairsModel.findAll({
+    cacheKey: 'pairs-findAllSortedByTitle',
+    sort: { title: 1 },
+  });
 
   return items?.data?.length > 0
     ? { data: items?.data, status: 'success' }

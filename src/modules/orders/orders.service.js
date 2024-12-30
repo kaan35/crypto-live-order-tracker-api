@@ -54,7 +54,7 @@ export const create = async (requestData) => {
 };
 
 export const findAllByItemLimit = async (id) => {
-  const pairDetail = await pairsModel.findOne({ key: id });
+  const pairDetail = await pairsModel.findOne({ key: id }, 'orders-findAllByItemLimit');
   const ordersBuy = await ordersModel.findAll(
     { actionType: 'buy', orderType: 'limit', pairId: pairDetail?.data?._id },
     { price: -1 },
@@ -80,7 +80,7 @@ export const findAllByItemLimit = async (id) => {
 };
 
 export const findAllByItemMarket = async (id) => {
-  const pairDetail = await pairsModel.findOne({ key: id });
+  const pairDetail = await pairsModel.findOne({ key: id }, 'orders-findAllByItemMarket');
   const orders = await ordersModel.findAll(
     { orderType: 'market', pairId: pairDetail?.data?._id },
     { price: -1 },
