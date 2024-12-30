@@ -16,6 +16,10 @@ export const findAll = async (filter = null, sort = {}, skip = 0, limit = 0) => 
     data = filter
       ? await orders.find(filter).sort(sort).skip(skip).limit(limit).toArray()
       : await orders.find().skip(skip).limit(limit).toArray();
+  } else if (sort) {
+    data = filter
+      ? await orders.find(filter).sort(sort).toArray()
+      : await orders.find().sort(sort).toArray();
   } else {
     data = filter ? await orders.find(filter).toArray() : await orders.find().toArray();
   }

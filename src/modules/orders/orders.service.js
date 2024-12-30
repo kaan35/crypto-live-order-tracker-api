@@ -56,13 +56,13 @@ export const findAllGroupType = async (id) => {
   const pairDetail = await pairsModel.findOne({ key: id });
   const ordersBuy = await ordersModel.findAll(
     { orderType: 'buy', pairId: pairDetail?.data?._id },
-    'price',
+    { price: -1 },
     0,
     10,
   );
   const ordersSell = await ordersModel.findAll(
     { orderType: 'sell', pairId: pairDetail?.data?._id },
-    'price',
+    { price: -1 },
     0,
     10,
   );
