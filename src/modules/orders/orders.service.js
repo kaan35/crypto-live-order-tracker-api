@@ -1,4 +1,5 @@
 import { ObjectId } from 'mongodb';
+import { removeCache } from '../../utils/cache.js';
 import { getDateTime, getDateTimeStamp } from '../../utils/date.js';
 import { sendSocketEvent } from '../../utils/socket.js';
 import * as pairsModel from './../pairs/pairs.model.js';
@@ -29,6 +30,8 @@ export const create = async (requestData) => {
       });
 
       if (result?.status === 'success') {
+        await removeCache(`orders-findAllByItemLimit-${pairDetail?.data?._id}`);
+        await removeCache(`orders-findAllByItemMarket-${pairDetail?.data?._id}`);
         sendSocketEvent(`pair-${pairDetail?.data?.key}-order-${orderType}`, result?.data);
         return {
           message: 'Order successfully created',

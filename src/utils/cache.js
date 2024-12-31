@@ -17,8 +17,10 @@ const deserializeObjectId = (document) => {
   return document;
 };
 
-export const setCache = async (name, data) =>
-  await redisClient.setEx(name, 60, JSON.stringify(serializeObjectId(data)));
-
 export const getCache = async (name) =>
   deserializeObjectId(JSON.parse(await redisClient.get(name)));
+
+export const removeCache = async (name) => await redisClient.del(name);
+
+export const setCache = async (name, data) =>
+  await redisClient.setEx(name, 60, JSON.stringify(serializeObjectId(data)));
