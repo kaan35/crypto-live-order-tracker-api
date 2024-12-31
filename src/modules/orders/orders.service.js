@@ -83,7 +83,7 @@ export const findAllByItemMarket = async (id) => {
   const pairDetail = await pairsModel.findOne({ key: id }, 'orders-findAllByItemMarket');
   const orders = await ordersModel.findAll(
     { orderType: 'market', pairId: pairDetail?.data?._id },
-    { price: -1 },
+    { insertDateTimeStamp: -1 },
     0,
     10,
   );
