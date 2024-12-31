@@ -18,14 +18,14 @@ export const create = async (requestData) => {
     if (pairDetail?.status === 'success') {
       const result = await ordersModel.insertOne({
         actionType,
-        amount,
+        amount: parseFloat(amount),
         insertDateTime: getDateTime(),
         insertDateTimeStamp: getDateTimeStamp(),
         itemId: await ordersModel.getItemId(),
         orderType,
         pairId: new ObjectId(pairDetail?.data?._id),
-        price,
-        total: price * amount,
+        price: parseFloat(price),
+        total: parseFloat(price) * amount,
       });
 
       if (result?.status === 'success') {
@@ -54,7 +54,7 @@ export const create = async (requestData) => {
 };
 
 export const findAllByItemLimit = async (id) => {
-  const pairDetail = await pairsModel.findOne({ key: id }, 'orders-findAllByItemLimit');
+  const pairDetail = await pairsModel.findOne({ key: id }, `orders-findAllByItemLimit-${id}`);
   const ordersBuy = await ordersModel.findAll(
     { actionType: 'buy', orderType: 'limit', pairId: pairDetail?.data?._id },
     { price: -1 },
@@ -80,7 +80,7 @@ export const findAllByItemLimit = async (id) => {
 };
 
 export const findAllByItemMarket = async (id) => {
-  const pairDetail = await pairsModel.findOne({ key: id }, 'orders-findAllByItemMarket');
+  const pairDetail = await pairsModel.findOne({ key: id }, `orders-findAllByItemMarket-${id}`);
   const orders = await ordersModel.findAll(
     { orderType: 'market', pairId: pairDetail?.data?._id },
     { insertDateTimeStamp: -1 },
