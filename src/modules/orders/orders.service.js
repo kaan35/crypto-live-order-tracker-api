@@ -14,7 +14,10 @@ export const create = async (requestData) => {
   }
 
   if (requestDataCheck) {
-    const pairDetail = await pairsModel.findOne({ key: pairKey });
+    const pairDetail = await pairsModel.findOne({
+      cacheKey: `pairs-orders-create-${pairKey}`,
+      filter: { key: pairKey },
+    });
 
     if (pairDetail?.status === 'success') {
       const result = await ordersModel.insertOne({

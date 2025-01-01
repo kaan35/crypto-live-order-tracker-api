@@ -16,26 +16,27 @@ export const findAll = async ({ cacheKey = '', filter = {}, limit = 0, skip = 0,
 
   if (cacheKey) {
     cacheResult = await getCache(cacheKey);
-    if (cacheResult) {
-      return cacheResult
-        ? { cache: true, data: cacheResult, status: 'success' }
-        : { message: 'Not found', status: 'error' };
-    } else {
-      if (sort && limit) {
-        data = filter
-          ? await orders.find(filter).sort(sort).skip(skip).limit(limit).toArray()
-          : await orders.find().skip(skip).limit(limit).toArray();
-      } else if (sort) {
-        data = filter
-          ? await orders.find(filter).sort(sort).toArray()
-          : await orders.find().sort(sort).toArray();
-      } else {
-        data = filter ? await orders.find(filter).toArray() : await orders.find().toArray();
-      }
+  }
 
-      if (cacheKey) {
-        await setCache(cacheKey, data);
-      }
+  if (cacheResult) {
+    return cacheResult
+      ? { cache: true, data: cacheResult, status: 'success' }
+      : { message: 'Not found', status: 'error' };
+  } else {
+    if (sort && limit) {
+      data = filter
+        ? await orders.find(filter).sort(sort).skip(skip).limit(limit).toArray()
+        : await orders.find().skip(skip).limit(limit).toArray();
+    } else if (sort) {
+      data = filter
+        ? await orders.find(filter).sort(sort).toArray()
+        : await orders.find().sort(sort).toArray();
+    } else {
+      data = filter ? await orders.find(filter).toArray() : await orders.find().toArray();
+    }
+
+    if (cacheKey) {
+      await setCache(cacheKey, data);
     }
   }
 
