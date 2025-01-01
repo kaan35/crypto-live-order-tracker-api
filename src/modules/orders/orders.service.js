@@ -30,9 +30,14 @@ export const create = async (requestData) => {
       });
 
       if (result?.status === 'success') {
-        await removeCache(`orders-findAllByItemLimit-${pairDetail?.data?._id}`);
-        await removeCache(`orders-findAllByItemMarket-${pairDetail?.data?._id}`);
-        sendSocketEvent(`pair-${pairDetail?.data?.key}-order-${orderType}`, result?.data);
+        if (orderType === 'market') {
+          await removeCache(`orders-findAllByItemMarket-${pairDetail?.data?._id}`);
+        }
+        if (orderType === 'limit') {
+          await removeCache(`orders-findAllByItemLimitBuy-${pairDetail?.data?._id}`);
+          await removeCache(`orders-findAllByItemLimitSell-${pairDetail?.data?._id}`);
+        }
+        sendSocketEvent(`pairs-${pairDetail?.data?.key}-order-${orderType}`, result?.data);
         return {
           message: 'Order successfully created',
           status: 'success',
@@ -57,19 +62,30 @@ export const create = async (requestData) => {
 };
 
 export const findAllByItemLimit = async (id) => {
-  const pairDetail = await pairsModel.findOne({ key: id }, `orders-findAllByItemLimit-${id}`);
-  const ordersBuy = await ordersModel.findAll(
-    { actionType: 'buy', orderType: 'limit', pairId: pairDetail?.data?._id },
-    { price: -1 },
-    0,
-    10,
-  );
-  const ordersSell = await ordersModel.findAll(
-    { actionType: 'sell', orderType: 'limit', pairId: pairDetail?.data?._id },
-    { price: -1 },
-    0,
-    10,
-  );
+  const pairDetail = await pairsModel.findOne({
+    cacheKey: `pairs-findAllByItemLimit-${id}`,
+    filter: { key: id },
+  });
+  const ordersBuy = await ordersModel.findAll({
+    cacheKey: `orders-findAllByItemLimitBuy-${pairDetail?.data?._id}`,
+    filter: {
+      actionType: 'buy',
+      orderType: 'limit',
+      pairId: new ObjectId(pairDetail?.data?._id),
+    },
+    limit: 10,
+    sort: { price: -1 },
+  });
+  const ordersSell = await ordersModel.findAll({
+    cacheKey: `orders-findAllByItemLimitSell-${pairDetail?.data?._id}`,
+    filter: {
+      actionType: 'sell',
+      orderType: 'limit',
+      pairId: new ObjectId(pairDetail?.data?._id),
+    },
+    limit: 10,
+    sort: { price: -1 },
+  });
 
   return {
     data: {
@@ -83,16 +99,21 @@ export const findAllByItemLimit = async (id) => {
 };
 
 export const findAllByItemMarket = async (id) => {
-  const pairDetail = await pairsModel.findOne({ key: id }, `orders-findAllByItemMarket-${id}`);
-  const orders = await ordersModel.findAll(
-    { orderType: 'market', pairId: pairDetail?.data?._id },
-    { insertDateTimeStamp: -1 },
-    0,
-    10,
-  );
+  const pairDetail = await pairsModel.findOne({
+    cacheKey: `pairs-findAllByItemMarket-${id}`,
+    filter: { key: id },
+  });
+  const items = await ordersModel.findAll({
+    cacheKey: `orders-findAllByItemMarket-${pairDetail?.data?._id}`,
+    filter: {
+      orderType: 'market',
+      pairId: new ObjectId(pairDetail?.data?._id),
+    },
+    limit: 10,
+    sort: { insertDateTimeStamp: -1 },
+  });
 
-  return {
-    data: orders?.data,
-    status: 'success',
-  };
+  return items?.data?.length > 0
+    ? { data: items.data, status: 'success' }
+    : { data: null, message: 'Not found', status: 'error' };
 };
